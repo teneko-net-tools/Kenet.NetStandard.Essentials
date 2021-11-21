@@ -34,6 +34,11 @@ jobs:
           path: |
             src/**/*.nupkg
             src/**/*.snupkg
+      - run: echo '${{ github.ref }}'
+      - run: echo '${{ github.base_ref }}'
+      - run: echo '${{ github.head_ref }}'
+      - run: echo '${{ github.event_name }}'
+      - run: echo '${{ github.event.pull_request.merged }}'
   publish:
     if: |
       (github.ref == 'refs/heads/main'
@@ -59,25 +64,25 @@ jobs:
         id: download-artifacts
         uses: actions/download-artifact@v2
         continue-on-error: true
-      - name: Push nupkg's
-        id: push-nupkg
-        if: ${{ steps.download-artifacts.outcome == 'success' }}
-        run: echo "::set-output name=CONSOLE::$(dotnet nuget push '**/*.nupkg' --source 'https://api.nuget.org/v3/index.json' --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate)"
-        continue-on-error: true
-      - name: Push nupkg's console output
-        if: steps.push-nupkg.outcome != 'skipped'
-        run: echo "${{steps.push-nupkg.outputs.CONSOLE}}"
-      - name: Push nupkg's suceeded
-        if: "${{ steps.push-nupkg.outcome == 'failure' && !contains(steps.push-nupkg.outputs.CONSOLE, 'error: File does not exist') }}"
-        run: exit 1
-      - name: Push snupkg's
-        id: push-snupkg
-        if: ${{ steps.download-artifacts.outcome == 'success' }}
-        run: echo "::set-output name=CONSOLE::$(dotnet nuget push '**/*.snupkg' --source 'https://api.nuget.org/v3/index.json' --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate)"
-        continue-on-error: true
-      - name: Push snupkg's console output
-        if: steps.push-snupkg.outcome != 'skipped'
-        run: echo "${{steps.push-snupkg.outputs.CONSOLE}}"
-      - name: Push snupkg's suceeded
-        if: "${{ steps.push-snupkg.outcome == 'failure' && !contains(steps.push-snupkg.outputs.CONSOLE, 'error: File does not exist') }}"
-        run: exit 1
+      # - name: Push nupkg's
+      #   id: push-nupkg
+      #   if: ${{ steps.download-artifacts.outcome == 'success' }}
+      #   run: echo "::set-output name=CONSOLE::$(dotnet nuget push '**/*.nupkg' --source 'https://api.nuget.org/v3/index.json' --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate)"
+      #   continue-on-error: true
+      # - name: Push nupkg's console output
+      #   if: steps.push-nupkg.outcome != 'skipped'
+      #   run: echo "${{steps.push-nupkg.outputs.CONSOLE}}"
+      # - name: Push nupkg's suceeded
+      #   if: "${{ steps.push-nupkg.outcome == 'failure' && !contains(steps.push-nupkg.outputs.CONSOLE, 'error: File does not exist') }}"
+      #   run: exit 1
+      # - name: Push snupkg's
+      #   id: push-snupkg
+      #   if: ${{ steps.download-artifacts.outcome == 'success' }}
+      #   run: echo "::set-output name=CONSOLE::$(dotnet nuget push '**/*.snupkg' --source 'https://api.nuget.org/v3/index.json' --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate)"
+      #   continue-on-error: true
+      # - name: Push snupkg's console output
+      #   if: steps.push-snupkg.outcome != 'skipped'
+      #   run: echo "${{steps.push-snupkg.outputs.CONSOLE}}"
+      # - name: Push snupkg's suceeded
+      #   if: "${{ steps.push-snupkg.outcome == 'failure' && !contains(steps.push-snupkg.outputs.CONSOLE, 'error: File does not exist') }}"
+      #   run: exit 1
