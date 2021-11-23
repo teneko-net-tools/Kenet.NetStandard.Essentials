@@ -40,6 +40,10 @@ jobs:
             src/**/*.nupkg
             src/**/*.snupkg
   publish:
+    env:
+      IS_MAIN_PR: false
+    runs-on: windows-latest
+    needs: build
     if: |
       (
         github.ref == 'main'
@@ -65,8 +69,6 @@ jobs:
             || contains(toJSON(github.event.commits.*.message), 'perf: ')
           )
       )
-    needs: build
-    runs-on: windows-latest
     steps:
       - name: Download package artifacts
         id: download-artifacts
@@ -94,3 +96,28 @@ jobs:
       - name: Push snupkg's suceeded
         if: "${{ steps.push-snupkg.outcome == 'failure' && !contains(steps.push-snupkg.outputs.CONSOLE, 'error: File does not exist') }}"
         run: exit 1
+  synchronize:
+    runs-on: ubuntu-latest
+    needs: publish
+    if: |
+      (
+        github.ref == 'main'
+        && github.event_name == 'pull_request'
+        && github.event.pull_request.merged == true
+      )
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create pull request
+        uses: repo-sync/pull-request@v2
+        id: sync-pr
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          destination_branch: "develop"
+          pr_title: "Rebase release from ${{ github.ref }} into develop"
+          pr_body: "refactor: rebased release from ${{ github.ref }} into develop"
+      - name: Rebase pull request
+        if: success()
+        uses: Teroneko-NET-Tools/action-auto-rebase@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ steps.sync-pr.outputs.pr_number }}
