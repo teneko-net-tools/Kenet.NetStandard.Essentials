@@ -96,7 +96,7 @@ jobs:
       - name: Push snupkg's suceeded
         if: "${{ steps.push-snupkg.outcome == 'failure' && !contains(steps.push-snupkg.outputs.CONSOLE, 'error: File does not exist') }}"
         run: exit 1
-  synchronize:
+  rebase:
     runs-on: ubuntu-latest
     needs: publish
     if: |
